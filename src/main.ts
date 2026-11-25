@@ -1,8 +1,9 @@
 import './style.css'
+const url = "https://api.open-meteo.com/v1/forecast?latitude=-23.50167&longitude=-47.45806&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America/Sao_Paulo"
 
 function formatarData(isoString:string): string {
-    // ISO string sem timezone vira UTC no new Date()
-    // para corrigir, forçamos horário local separando ano/mês/dia
+    // ISO sem timezone vira UTC no new Date(), transformando data errada no BR
+    // para corrigir, força horário local parseando ano/mês/dia manualmente
     const [ano, mes, dia] = isoString.split('-')
     const data = new Date(Number(ano), Number(mes) - 1, Number(dia))
     const hoje = new Date()
@@ -26,6 +27,7 @@ function formatarData(isoString:string): string {
 }
 
 function obterEmojiClima(weatherCode: number): string {
+    // mapeamento baseado da doc Open-Meteo
     const emojiClima: Record<number, string> = {
         0: '☀️',
         1: '🌤️',
@@ -57,15 +59,14 @@ function obterEmojiClima(weatherCode: number): string {
         99: '⛈️',
     }
 
-    return emojiClima[weatherCode] ?? '?'
+    return emojiClima[weatherCode] ?? '(?)'
 }
 
 async function obterPrevisao() {
     const container = document.getElementById('previsao')!
+    const containerAtual = document.getElementById('atual')!
 
     try {
-        const url = "https://api.open-meteo.com/v1/forecast?latitude=-23.50167&longitude=-47.45806&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America/Sao_Paulo"
-
         // realiza requisição à API
         const resposta = await fetch(url)
 
@@ -77,7 +78,12 @@ async function obterPrevisao() {
         // converte a resposta para JSON
         const dados = await resposta.json()
 
-        // limpa conteúdo anterior do container
+        const tempAtual = dados.current.temperature_2m
+        const codeAtual = dados.current.weather_code
+        const emojiAtual = obterEmojiClima(codeAtual)
+
+        containerAtual.textContent = `${emojiAtual} Agora: ${tempAtual}°C`
+
         container.innerHTML = ''
 
         for (let i = 0; i < 3; i++) {
@@ -99,6 +105,7 @@ async function obterPrevisao() {
     } catch (erro) {
         console.error(erro)
         container.innerHTML = '<div class="erro">Erro ao carregar clima</div>'
+        containerAtual.textContent = ''
     }
 }
 
