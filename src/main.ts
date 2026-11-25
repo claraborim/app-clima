@@ -25,6 +25,41 @@ function formatarData(isoString:string): string {
     })
 }
 
+function obterEmojiClima(weatherCode: number): string {
+    const emojiClima: Record<number, string> = {
+        0: '☀️',
+        1: '🌤️',
+        2: '⛅',
+        3: '☁️',
+        45: '🌫️',
+        48: '🌫️',
+        51: '🌦️',
+        53: '🌦️',
+        55: '🌧️',
+        56: '🌧️',
+        57: '🌧️',
+        61: '🌧️',
+        63: '🌧️',
+        65: '🌧️',
+        66: '🌧️',
+        67: '🌧️',
+        71: '🌨️',
+        73: '🌨️',
+        75: '🌨️',
+        77: '🌨️',
+        80: '🌦️',
+        81: '🌧️',
+        82: '🌧️',
+        85: '🌨️',
+        86: '🌨️',
+        95: '⛈️',
+        96: '⛈️',
+        99: '⛈️',
+    }
+
+    return emojiClima[weatherCode] ?? '?'
+}
+
 async function obterPrevisao() {
     const container = document.getElementById('previsao')!
 
@@ -51,10 +86,11 @@ async function obterPrevisao() {
             const tempMax = dados.daily.temperature_2m_max[i]
             const tempMin = dados.daily.temperature_2m_min[i]
             const chuva = dados.daily.precipitation_probability_max[i]
+            const emoji = obterEmojiClima(dados.daily.weather_code[i])
 
             const card = document.createElement('div')
             card.className = 'card-dia'
-            card.textContent = `${dataFormatada}: Max ${tempMax}°C / Min ${tempMin}°C | Chuva: ${chuva}%`
+            card.textContent = `${emoji} ${dataFormatada}: Max ${tempMax}°C / Min ${tempMin}°C | Chuva: ${chuva}%`
 
             // adiciona card ao container
             container.appendChild(card)
